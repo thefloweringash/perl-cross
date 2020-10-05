@@ -19,9 +19,49 @@ checktype() {
 	resdef $1 'found' 'missing'
 }
 
-# XXX: this probably won't work on non-ELF hosts.
-# TODO: add test for readelf usability, and switch
-# to objdump if possible
+# try_boolean expr includes
+try_boolean() {
+	try_start
+	try_includes $2
+	try_add "int main(void) {"
+	try_add "  char test_array[1 - 2 * !($1)];"
+	try_add "  test_array[0] = 0;"
+	try_add "  return test_array[0];"
+	try_add "}"
+	try_compile
+}
+
+# search_size type includes
+search_size() {
+	# logic adapted from autoconf
+	# ca1006165900df4707b0caaa0a9378923812cca0
+	local lo hi try
+	lo=0
+	try=0
+
+	# find an upper bound
+	while true; do
+		if try_boolean "sizeof($1) <= $try" "$2"; then
+			hi=$try
+			break;
+		else
+			lo=$(( try + 1 ))
+			try=$(( try * 2 + 1 ))
+		fi
+	done
+
+	# binary search between lo and hi
+	while [ "$lo" != "$hi" ]; do
+		try=$(( (hi - lo) / 2 + lo ))
+		if try_boolean "sizeof($1) <= $try" "$2"; then
+			hi=$try
+		else
+			lo=$(( try + 1 ))
+		fi
+	done
+
+	echo "$lo"
+}
 
 # checksize symbol type includes
 checksize() {
@@ -38,13 +78,7 @@ checksize() {
 		return
 	fi
 
-	if not try_readelf --syms > try.out 2>>$cfglog; then
-		result 'unknown'
-		die "Cannot determine sizeof($2), use -D${1}size="
-		return
-	fi
-
-	result=`grep foo try.out | sed -r -e 's/.*: [0-9]+ +//' -e 's/ .*//' -e 's/^0+//g'`
+	result=$(search_size "$2" "$3")
 	if [ -z "$result" -o "$result" -le 0 ]; then
 		result "unknown"
 		die "Cannot determine sizeof($2)"
