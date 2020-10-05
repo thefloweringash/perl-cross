@@ -140,7 +140,10 @@ ifeq ($(soname),)
 perl$x: LDFLAGS += -Wl,-rpath,$(archlib)/CORE
 endif
 endif # or should it be "else"?
+
+ifeq ($(soname),so)
 perl$x: LDFLAGS += -Wl,-E
+endif
 
 perl$x: perlmain$o $(LIBPERL) $(static_modules) static.list ext.libs
 	$(eval extlibs=$(shell cat ext.libs))
@@ -185,7 +188,7 @@ endif
 
 ifeq ($(useshrplib),true)
 $(LIBPERL):
-	$(CC) $(LDDLFLAGS) -o $@ $(filter %$o,$^) $(LIBS)
+	$(CC) -shared -o $@ $(filter %$o,$^) $(LIBS)
 else
 $(LIBPERL):
 	$(AR) cru $@ $(filter %$o,$^)

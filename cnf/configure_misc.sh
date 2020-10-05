@@ -32,7 +32,9 @@ define State
 define usemmldlt 'define'
 
 # Used by modules?
-define dlext 'so'
+# TODO: getting in the way of darwin
+#define dlext 'so'
+define dlext 'bundle'
 define dlsrc 'dl_dlopen.xs'
 
 # Required by lib/Config.t, and configpm may use these.

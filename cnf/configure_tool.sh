@@ -148,15 +148,16 @@ fi
 # File name extensions, must be set before running any compile/link tests
 define _o '.o'
 define _a '.a'
-define so 'so'
+# define so 'so' # TODO: getting in the way of darwin
+define so 'dylib'
 define _exe ''
 
 # Used only for modules
-define cccdlflags '-fPIC -Wno-unused-function'
-define ccdlflags '-Wl,-E'
+# define cccdlflags '-fPIC -Wno-unused-function' # TODO avoiding fic on darwin
+# define ccdlflags '-Wl,-E' # TODO disabled to be able to use platform hints (this runs before hints)
 
 # Misc flags setup
-predef lddlflags "-shared"	# modules
+predef lddlflags '' # modules (TODO: darwin)
 predef ccflags ''		# perl and modules
 predef ldflags ''		# perl only?
 predef cppflags ''		# unused?
@@ -201,7 +202,7 @@ fi
 
 # enddef ccflags # done later in _hdrs because of LARGEFILE_SOURCE
 enddef ldflags
-enddef lddlflags
+# enddef lddlflags # done later at end of file for darwin
 enddef cppflags
 
 mstart "Checking whether ld supports scripts"
@@ -269,11 +270,22 @@ if not hinted 'osname'; then
 			define osname "gnu"
 			result "GNU"
 			;;
+		*-darwin*)
+			define osname "darwin"
+			result "Darwin"
+			;;
 		*)
 			result "no"
 			;;
 	esac
 fi
+
+if [ "$osname" == darwin ]; then
+	append lddlflags '-bundle -undefined dynamic_lookup'
+	append ccflags '-fno-common -DPERL_DARWIN -DPERL_USE_SAFE_PUTENV'
+fi
+
+enddef lddlflags
 
 # Check whether debugging should be enabled
 # Allow -DEBUGGING as well (sets EBUGGING=define)
