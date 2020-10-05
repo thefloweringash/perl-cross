@@ -88,7 +88,7 @@ whichprog cc CC gcc || whichprog cc CC cc || die "No C compiler found"
 whichprog ar AR ar || die "Cannot find ar"
 whichprog nm NM nm
 whichprog ranlib RANLIB ranlib
-whichprog objdump OBJDUMP objdump || die "Cannot find objdump"
+whichprog objdump OBJDUMP objdump
 
 # XXX: this looks wrong, but the usemmldlt code depends on $ld being able
 # to compile try.c. What kind of moron could have written that. Oh wait.
