@@ -187,8 +187,8 @@ while [ $i -le $# -o -n "$n" ]; do
 			fi
 			;;
 		host-*)
-			what=`echo "$a" | sed -e 's/^host-//'`
-			hco="$hco --$what=$v"
+			what=`echo "$a" | sed -e 's/^host//'`
+			hco="$hco $what=$v"
 			;;
 		with-*)
 			what=`echo "$a" | sed -r -e 's/^[^-]+-//' -e 's/-/_/g'`
